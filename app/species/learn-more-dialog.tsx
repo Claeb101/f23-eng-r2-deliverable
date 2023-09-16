@@ -8,7 +8,11 @@ import { useState } from "react";
 export type Species = Database["public"]["Tables"]["species"]["Row"];
 
 export const LearnMore = ({ species }: { species: Species }) => {
-  const [data, setData] = useState(species);
+  const [data, setData] = useState<
+    Omit<Species, "author"> & {
+      author: undefined | { id: string; biography: string | null; display_name: string; email: string };
+    }
+  >({ ...species, author: undefined });
 
   const getAuthor = async () => {
     const supabase = createClientComponentClient<Database>();
@@ -24,9 +28,11 @@ export const LearnMore = ({ species }: { species: Species }) => {
     }
   };
   return (
-    <Dialog onOpenChange={(o) => {
-      if(o) void getAuthor()
-    }}>
+    <Dialog
+      onOpenChange={(o) => {
+        if (o) void getAuthor();
+      }}
+    >
       <DialogTrigger asChild>
         <Button className="mt-3 w-full">Learn More</Button>
       </DialogTrigger>
@@ -43,13 +49,14 @@ export const LearnMore = ({ species }: { species: Species }) => {
           <p>Kingdom: {data.kingdom}</p>
           <p>Description: {data.description}</p>
         </div>
-
-        <div>
-          <p>Author</p>
-          <p>Email: {data.author.email}</p>
-          <p>Display Name: {data.author.display_name}</p>
-          <p>Biography: {data.author.biography}</p>
-        </div>
+        {data.author ? (
+          <div>
+            <p>Author</p>
+            <p>Email: {data.author.email}</p>
+            <p>Display Name: {data.author.display_name}</p>
+            <p>Biography: {data.author.biography}</p>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
